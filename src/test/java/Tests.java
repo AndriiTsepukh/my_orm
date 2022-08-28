@@ -1,7 +1,7 @@
 import org.bibernate.orm.SessionFactory;
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Assert;
 import org.junit.Test;
-import org.postgresql.ds.PGSimpleDataSource;
 import testobjects.Products;
 import testobjects.TestEntity;
 
@@ -42,10 +42,11 @@ public class Tests {
     }
 
     private Supplier<DataSource> getDatasourceSupplier() {
+
         return () -> {
-            PGSimpleDataSource dataSource = new PGSimpleDataSource();
-            dataSource.setURL("jdbc:postgresql://localhost:5432/postgres");
-            dataSource.setUser("postgres");
+            var dataSource = new JdbcDataSource();
+            dataSource.setURL("jdbc:h2:file:target/db/testdb");
+            dataSource.setUser("sa");
             dataSource.setPassword("Abcd1234");
             return dataSource;
         };
