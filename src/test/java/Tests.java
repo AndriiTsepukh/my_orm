@@ -41,6 +41,20 @@ public class Tests {
         Assert.assertTrue(entity == secondEntity);
     }
 
+    @Test
+    public void saveAndRetrieveEntity() {
+        Supplier<DataSource> dataSourceSupplier = getDatasourceSupplier();
+
+        var sessionFactory = new SessionFactory(dataSourceSupplier);
+        var session = sessionFactory.createSession();
+        TestEntity testEntity = new TestEntity();
+        testEntity.productName = "Watermelon";
+        session.persist(testEntity);
+        session.flush();
+        var entity = session.find(TestEntity.class, testEntity.id);
+        Assert.assertEquals(entity.productName, "Watermelon");
+    }
+
     private Supplier<DataSource> getDatasourceSupplier() {
 
         return () -> {

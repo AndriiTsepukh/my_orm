@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS products;
 CREATE TABLE products (
-    id INT,
+    id IDENTITY NOT NULL PRIMARY KEY,
     name VARCHAR(255)
 );
 
-INSERT INTO products VALUES (1, 'Orange');
+INSERT INTO products(name) VALUES ('Orange');
