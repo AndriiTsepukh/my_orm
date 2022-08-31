@@ -1,5 +1,8 @@
 package org.bibernate.orm;
 
+import org.bibernate.orm.actions.Action;
+import org.bibernate.orm.actions.DeleteAction;
+import org.bibernate.orm.actions.InsertAction;
 import org.bibernate.orm.annotation.Column;
 import org.bibernate.orm.annotation.Table;
 import org.bibernate.orm.exception.ORMException;
@@ -9,12 +12,17 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 public class Session {
     Map<String, Map<Integer, Object>> objectsCash = new HashMap<>();
     DataSource dataSource;
     Connection connection;
+
+    Queue<Action> actionQueue = new LinkedList<>();
+
     public Session (DataSource dataSource) {
         this.dataSource = dataSource;
         try {
@@ -50,6 +58,11 @@ public class Session {
                         if (field.isAnnotationPresent(Column.class)) {
                             var columnName = field.getAnnotation(Column.class).value();
                             if (columnName.isBlank()) columnName = field.getName().toLowerCase();
+
+//                           TODO
+                            field.getType().equals(Integer.class);
+
+
                             String fieldValue = resulSet.getString(columnName);
                             field.setAccessible(true);
                             field.set(objectInstance,fieldValue);
@@ -75,7 +88,21 @@ public class Session {
         }
     }
 
+    public void persist(Object entity) {
+//        TODO add create or update depends on ID availability
+        actionQueue.add(new InsertAction(connection, entity));
+    }
+
+    public void remove(Object entity) {
+        actionQueue.add(new DeleteAction(connection, entity));
+    }
+
+    public void flush() {
+        actionQueue.stream().forEach(Action::execute);
+    }
+
     public void close() {
+        flush();
         try {
             connection.close();
         } catch (SQLException e) {
